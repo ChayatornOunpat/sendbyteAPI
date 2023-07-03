@@ -1,10 +1,16 @@
+import os
 import secrets
+import asyncio
+import logging
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-app = FastAPI(debug=True)
 
+app = FastAPI()
+
+
+time = {}
 
 origins = [
     "http://localhost:5173"
@@ -17,6 +23,32 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
+
+
+async def delete():
+    while True:
+        logger.debug(time)
+        await asyncio.sleep(60)
+        remove = []
+        for key in time.keys():
+            time[key] = time[key] - 1
+            logger.debug("2")
+            if time[key] == 0:
+                logger.debug("3")
+                remove.append(key)
+                if os.path.exists(f'./files/{key}_file.zip'):
+                    logger.debug("4")
+                    os.remove(f'./files/{key}_file.zip')
+        for key in remove:
+            del time[key]
+
+
+@app.on_event("startup")
+async def start():
+    t = asyncio.create_task(delete())
 
 
 @app.get("/")
@@ -49,11 +81,13 @@ async def download(fn: str):
 
 @app.post("/send/submitfile")
 async def upload(file: UploadFile = File(...)):
-    filename = secrets.randbelow(999999)
-    with open(f'./files/{filename}_file.zip', 'wb') as f:
-        contents = await file.read()
-        f.write(contents)
+    while True:
+        name = secrets.randbelow(999999)
+        if name not in time.keys():
+            time[name] = 2
+            filename = name
+            with open(f'./files/{filename}_file.zip', 'wb') as f:
+                contents = await file.read()
+                f.write(contents)
 
-    # Perform any other necessary processing
-
-    return {"code": filename}
+            return {"code": filename}
