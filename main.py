@@ -1,7 +1,7 @@
 import os
 import secrets
 import asyncio
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
@@ -69,7 +69,10 @@ async def receive_bg():
 
 @app.get("/receive/files/{fn}")
 async def download(fn: str):
-    return FileResponse(f'./files/{fn}_file.zip')
+    if os.path.exists(f"./files/{fn}_files.zip"):
+        return FileResponse(f"./files/{fn}_file.zip")
+    else:
+        raise HTTPException(status_code=404, detail="File not found")
 
 @app.post("/send/submitfile")
 async def upload(file: UploadFile = File(...)):
