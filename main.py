@@ -48,17 +48,33 @@ async def start():
 async def root():
     return FileResponse('./dist/index.html')
 
+@app.get("/send")
+async def send():
+    return FileResponse('./dist/index.html')
+
+@app.get("/receive")
+async def receive():
+    return FileResponse('./dist/index.html')
+
+@app.get("/receive{code}")
+async def receive_code(code: int):
+    return FileResponse('./dist/index.html')
+
 @app.get("/logo")
 async def logo():
     return FileResponse('./assets/logo.png')
 
+@app.get("/icon")
+async def icon():
+    return FileResponse('./assets/icon.png')
+
 @app.get("/js")
 async def js():
-    return FileResponse('./dist/assets/index-5bff26e4.js')
+    return FileResponse('./dist/assets/index-9cd9f8fe.js')
 
 @app.get("/css")
 async def css():
-    return FileResponse('./dist/assets/index-c1357765.css')
+    return FileResponse('./dist/assets/index-1e34515e.css')
 
 @app.get("/bg/home")
 async def home_bg():
