@@ -1,6 +1,7 @@
 import os
 import secrets
 import asyncio
+import aiofiles
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -47,29 +48,33 @@ async def start():
 async def root():
     return FileResponse('./dist/index.html')
 
+@app.get("/logo")
+async def logo():
+    return FileResponse('./assets/logo.png')
+
 @app.get("/js")
 async def js():
-    return FileResponse('./dist/assets/index-66192589.js')
+    return FileResponse('./dist/assets/index-5bff26e4.js')
 
 @app.get("/css")
 async def css():
     return FileResponse('./dist/assets/index-c1357765.css')
 
-@app.get("/home/bg")
+@app.get("/bg/home")
 async def home_bg():
     return FileResponse('./assets/home.jpg')
 
-@app.get("/send/bg")
+@app.get("/bg/send")
 async def send_bg():
     return FileResponse('./assets/send.jpg')
 
-@app.get("/receive/bg")
+@app.get("/bg/receive")
 async def receive_bg():
     return FileResponse('./assets/receive.jpg')
 
 @app.get("/receive/files/{fn}")
 async def download(fn: str):
-    if os.path.exists(f"./files/{fn}_files.zip"):
+    if os.path.exists(f"./files/{fn}_file.zip"):
         return FileResponse(f"./files/{fn}_file.zip")
     else:
         raise HTTPException(status_code=404, detail="File not found")
@@ -80,9 +85,9 @@ async def upload(file: UploadFile = File(...)):
         name = secrets.randbelow(999999)
         if name not in time.keys():
             filename = name
-            with open(f'./files/{filename}_file.zip', 'wb') as f:
+            async with aiofiles.open(f'./files/{filename}_file.zip', 'wb') as f:
                 contents = await file.read()
-                f.write(contents)
+                await f.write(contents)
             time[name] = 10
 
             return {"code": filename}
