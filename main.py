@@ -56,7 +56,7 @@ async def send():
 async def receive():
     return FileResponse('./dist/index.html')
 
-@app.get("/receive{code}")
+@app.get("/receive/{code}")
 async def receive_code(code: int):
     return FileResponse('./dist/index.html')
 
