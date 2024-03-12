@@ -97,7 +97,8 @@ async def download(fn: str):
                 while chunk := await f.read(CHUNK_SIZE):
                     yield chunk
 
-        headers = {'Content-Disposition': 'attachment; filename="large_file.tar"'}
+        headers = {'Content-Disposition': f'attachment; filename="{fn}_file.zip"',
+                   'Content-Length': str(os.path.getsize(f"./files/{fn}_file.zip"))}
         return StreamingResponse(iterfile(), headers=headers, media_type='application/zip')
     else:
         raise HTTPException(status_code=404, detail="File not found")
