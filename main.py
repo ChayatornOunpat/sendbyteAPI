@@ -2,11 +2,12 @@ import os
 import secrets
 import asyncio
 import aiofiles
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 
 
+CHUNK_SIZE = 1024 * 1024
 app = FastAPI()
 
 
@@ -70,11 +71,11 @@ async def icon():
 
 @app.get("/js")
 async def js():
-    return FileResponse('./dist/assets/index-9cd9f8fe.js')
+    return FileResponse('./dist/assets/index-b1e78bdc.js')
 
 @app.get("/css")
 async def css():
-    return FileResponse('./dist/assets/index-1e34515e.css')
+    return FileResponse('./dist/assets/index-4d7d0f72.css')
 
 @app.get("/bg/home")
 async def home_bg():
@@ -91,19 +92,28 @@ async def receive_bg():
 @app.get("/receive/files/{fn}")
 async def download(fn: str):
     if os.path.exists(f"./files/{fn}_file.zip"):
-        return FileResponse(f"./files/{fn}_file.zip")
+        async def iterfile():
+            async with aiofiles.open(f"./files/{fn}_file.zip", 'rb') as f:
+                while chunk := await f.read(CHUNK_SIZE):
+                    yield chunk
+
+        headers = {'Content-Disposition': 'attachment; filename="large_file.tar"'}
+        return StreamingResponse(iterfile(), headers=headers, media_type='application/zip')
     else:
         raise HTTPException(status_code=404, detail="File not found")
 
 @app.post("/send/submitfile")
-async def upload(file: UploadFile = File(...)):
+async def upload(request: Request):
     while True:
         name = secrets.randbelow(999999)
         if name not in time.keys():
             filename = name
-            async with aiofiles.open(f'./files/{filename}_file.zip', 'wb') as f:
-                contents = await file.read()
-                await f.write(contents)
             time[name] = 10
+            try:
+                async with aiofiles.open(f'./files/{filename}_file.zip', 'wb') as f:
+                    async for chunk in request.stream():
+                        await f.write(chunk)
+            except Exception:
+                return {"message": "There was an error uploading the file"}
 
             return {"code": filename}
