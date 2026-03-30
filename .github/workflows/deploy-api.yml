@@ -19,6 +19,7 @@ jobs:
 
       - name: Create deploy archive
         run: |
+          ARCHIVE_PATH="$RUNNER_TEMP/api-src.tar.gz"
           tar \
             --exclude='./.git' \
             --exclude='./.github' \
@@ -28,7 +29,8 @@ jobs:
             --exclude='./.env' \
             --exclude='./files' \
             --exclude='./dist' \
-            -czf api-src.tar.gz .
+            -czf "$ARCHIVE_PATH" .
+          cp "$ARCHIVE_PATH" ./api-src.tar.gz
 
       - name: Upload archive to VPS
         uses: appleboy/scp-action@v0.1.7
