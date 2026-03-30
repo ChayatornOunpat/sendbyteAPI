@@ -68,5 +68,6 @@ jobs:
             python -m pip install -r requirements.txt
 
             mkdir -p files dist
+            touch .env
 
             ${{ secrets.VPS_API_RESTART_CMD }}
