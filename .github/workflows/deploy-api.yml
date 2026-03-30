@@ -21,6 +21,7 @@ jobs:
         run: |
           ARCHIVE_PATH="$RUNNER_TEMP/api-src.tar.gz"
           tar \
+            --warning=no-file-changed \
             --exclude='./.git' \
             --exclude='./.github' \
             --exclude='./.idea' \
