@@ -186,7 +186,7 @@ async def receive_bg():
 
 
 @app.get("/receive/files/{fn}")
-async def download(fn: str):
+async def download(fn: int):
     file_path = timed_file_path(fn)
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
